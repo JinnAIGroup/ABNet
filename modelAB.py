@@ -256,8 +256,8 @@ def get_model(img_shape, desire_shape, traffic_convection_shape, rnn_state_shape
 if __name__=="__main__":
       # Build model
     img_shape = (12, 128, 256)
-    traffic_convection_shape = (2)
     desire_shape = (8)
+    traffic_convection_shape = (2)
     rnn_state_shape = (512)
     num_classes = 6
 
