@@ -1,11 +1,7 @@
 '''
-YPL & JLL, 2021.9.17, 10.12, 12.6
+YPL & JLL, 2021.9.17, 10.12, 12.8
 
-(YPN) jinn@Liu:~/YPN/ABNet$ python modelAB.py
-=> ./saved_model/modelAB.h5 =>
 (YPN) jinn@Liu:~/YPN/ABNet$ python h5topbAB.py modelAB.pb
-=> Error ValueError: ' /' is not a valid scope name
-./saved_model/modelAB.pb => Done
 '''
 import os
 import argparse
