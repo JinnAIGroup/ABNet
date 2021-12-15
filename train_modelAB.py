@@ -1,6 +1,7 @@
-"""   JLL, SLT, 2021.12.8
+"""   JLL, SLT, 2021.12.15
 from /home/jinn/YPN/OPNet/train_modelA4.py, train_modelB3.py
 train modelAB = UNet + RNN + PoseNet
+combine Projects A and B
 
 1. Same as supercombo I/O
 2. Tasks: multiclass semantic segmentation + temporal state (features) + path planning (PP)
@@ -63,10 +64,14 @@ def gen(hwm, host, port, model):
     for tup in client_generator(hwm=hwm, host=host, port=port):
         Ximgs, Xin1, Xin2, Xin3, Ytrue0, Ytrue1, Ytrue2, Ytrue3, Ytrue4, Ytrue5, Ytrue6, Ytrue7, Ytrue8, Ytrue9, Ytrue10, Ytrue11, Ymasks = tup
 
-        Xins  = (Ximgs, Xin1, Xin2, Xin3)   #  (imgs, traffic_convection, desire, rnn_state)
-        Ytrue = (Ytrue0, Ytrue1, Ytrue2, Ytrue3, Ytrue4, Ytrue5, Ytrue6, Ytrue7, Ytrue8, Ytrue9, Ytrue10, Ytrue11, Ymasks)
-        #Ypred = model.predict(x=Ximgs)
-        #loss = custom_loss(Ytrue, Ypred)
+        Xins  = [Ximgs, Xin1, Xin2, Xin3]   #  (imgs, traffic_convection, desire, rnn_state)
+        Ytrue0_11 = np.hstack((Ytrue0, Ytrue1, Ytrue2, Ytrue3, Ytrue4, Ytrue5, Ytrue6, Ytrue7, Ytrue8, Ytrue9, Ytrue10, Ytrue11))
+          #---  Ytrue0_11.shape = (16, 2383)
+          #---  Ymasks.shape = (16, 256, 512, 12)
+          #print('#---  Ymasks.shape =', Ymasks.shape)
+        Ytrue = [Ytrue0_11, Ymasks]
+          #Ypred = model.predict(x=Ximgs)
+          #loss = custom_loss(Ytrue, Ypred)
 
         yield Xins, Ytrue
 
@@ -83,19 +88,7 @@ def custom_loss(y_true, y_pred):
     loss = (loss1 + loss2)/2
     '''
       #----- Project B Part
-    loss0 = tf.keras.losses.mse(y_true[0], y_pred[0])
-    loss1 = tf.keras.losses.mse(y_true[1], y_pred[1])
-    loss2 = tf.keras.losses.mse(y_true[2], y_pred[2])
-    loss3 = tf.keras.losses.mse(y_true[3], y_pred[3])
-    loss4 = tf.keras.losses.mse(y_true[4], y_pred[4])
-    loss5 = tf.keras.losses.mse(y_true[5], y_pred[5])
-    loss6 = tf.keras.losses.mse(y_true[6], y_pred[6])
-    loss7 = tf.keras.losses.mse(y_true[7], y_pred[7])
-    loss8 = tf.keras.losses.mse(y_true[8], y_pred[8])
-    loss9 = tf.keras.losses.mse(y_true[9], y_pred[9])
-    loss10 = tf.keras.losses.mse(y_true[10], y_pred[10])
-    loss11 = tf.keras.losses.mse(y_true[11], y_pred[11])
-    loss = 0.5*loss0 + 0.5*loss1
+    loss = tf.keras.losses.mse(y_true[0], y_pred[0])
 
     return loss
 

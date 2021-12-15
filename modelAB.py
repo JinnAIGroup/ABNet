@@ -1,5 +1,7 @@
-'''   JLL, SLT, YJW, 2021.9.9, 11.4, 12.5
+'''   JLL, SLT, YJW, 2021.9.9, 11.4, 12.15
+from /home/jinn/YPN/OPNet/train_modelA4.py, train_modelB3.py
 modelAB = UNet + RNN + PoseNet
+combine modelA4 and modelB3
 supercombo: https://drive.google.com/file/d/1L8sWgYKtH77K6Kr3FQMETtAWeQNyyb8R/view
 output.txt: https://github.com/JinnAIGroup/OPNet/blob/main/output.txt
 
@@ -13,7 +15,7 @@ output.txt: https://github.com/JinnAIGroup/OPNet/blob/main/output.txt
    inputs[ 2 ].shape = (1, 2)
    inputs[ 3 ].shape = (1, 512)
 4. Output:
-   outs[ 0 ].shape = (1, 385)
+   outs[ 0 ].shape = (1, 385) = Ytrue0
    outs[ 1 ].shape = (1, 386)
    outs[ 2 ].shape = (1, 386)
    outs[ 3 ].shape = (1, 58)
@@ -25,6 +27,7 @@ output.txt: https://github.com/JinnAIGroup/OPNet/blob/main/output.txt
    outs[ 9 ].shape = (1, 32)
    outs[ 10 ].shape = (1, 12)
    outs[ 11 ].shape = (1, 512)
+   outs[ 12 ].shape = (1, 512) = Ymasks
 
 Projects:
 Goal: modelAB successfully drives my car like supercombo does
@@ -83,7 +86,7 @@ def UNet(x0, desire, traffic_convection, rnn_state, num_classes):
         x = layers.BatchNormalization()(x)
         x = layers.Activation("relu")(x)
         if (filters == 32):
-            out0, out1, out2, out3, out4, out5, out6, out7, out8, out9, out10, out11 = PoseNet(x, desire, traffic_convection, rnn_state, num_classes)
+            out0_out11 = PoseNet(x, desire, traffic_convection, rnn_state, num_classes)
 
         shape1 = x.shape.as_list()
         x = tf.compat.v1.image.resize_bilinear(x, (shape1[1]*2, shape1[2]*2))
@@ -97,7 +100,7 @@ def UNet(x0, desire, traffic_convection, rnn_state, num_classes):
 
       # Per-pixel classification layer
     out12 = layers.Conv2DTranspose(2*num_classes, 3, strides=2, activation="softmax", padding="same")(x)
-    return out0, out1, out2, out3, out4, out5, out6, out7, out8, out9, out10, out11, out12
+    return out0_out11, out12
 
 def PoseNet(x, desire, traffic_convection, rnn_state, num_classes):
       # Add a per-pixel classification layer (UNet final layer)
@@ -119,11 +122,11 @@ def PoseNet(x, desire, traffic_convection, rnn_state, num_classes):
 
     vf = layers.Flatten(name="vision_features")(x)
     out11 = RNN(vf, desire, traffic_convection, rnn_state)
-    out0, out1, out2, out3, out4, out5, out6, out7 = fork1(out11)
-    out8, out9 = fork2(vf)
-    out10 = fork3(vf)
-    outsPN = layers.Concatenate(axis=-1)([out0, out1, out2, out3, out4, out5, out6, out7, out8, out9, out10, out11])
-    return out0, out1, out2, out3, out4, out5, out6, out7, out8, out9, out10, out11
+    out0_out7  = fork1(out11)
+    out8_out9  = fork2(vf)
+    out10      = fork3(vf)
+    out0_out11 = layers.Concatenate(axis=-1)([out0_out7, out8_out9, out10, out11])
+    return out0_out11
 
 def RNN(x, desire, traffic_convection, rnn_state):
     desire1 = layers.Dense(use_bias=False, units=8)(desire)
@@ -153,8 +156,8 @@ def RNN(x, desire, traffic_convection, rnn_state):
     one_minus = layers.Dense(use_bias=False, units=512)(activation_1)
     multiply_2 = one_minus*activation_2
     multiply_1 = snpe_pleaser*activation_1
-    add_3 = layers.add([multiply_1 , multiply_2])
-    return add_3
+    out11 = layers.add([multiply_1 , multiply_2])
+    return out11
 
 def fork1(x):
     xp = layers.Dense(256, activation='relu', name="1_path")(x)
@@ -203,7 +206,8 @@ def fork1(x):
     out5 = layers.Dense(200, name="long_a")(x5)
     out6 = layers.Dense(200, name="long_v")(x6)
     out7 = layers.Softmax(axis=-1, name="desire_state")(x7)
-    return out0, out1, out2, out3, out4, out5, out6, out7
+    out0_out7 = layers.Concatenate(axis=-1)([out0, out1, out2, out3, out4, out5, out6, out7])
+    return out0_out7
 
 def fork2(x):
     x1 = layers.Dense(256, activation='relu', name="meta0")(x)
@@ -212,7 +216,8 @@ def fork2(x):
     dp2 = layers.Reshape((4, 8), name="desire_reshape")(dp1)
     dp3 = layers.Softmax(axis=-1, name="desire_pred0")(dp2)
     out9 = layers.Flatten(name="desire_pred")(dp3)
-    return out8, out9
+    out8_out9 = layers.Concatenate(axis=-1)([out8, out9])
+    return out8_out9
 
 def fork3(x):
     x = layers.Dense(64, activation='relu')(x)
@@ -229,10 +234,12 @@ def get_model(img_shape, desire_shape, traffic_convection_shape, rnn_state_shape
     in1 = keras.Input(shape=desire_shape, name="desire")
     in2 = keras.Input(shape=traffic_convection_shape, name="traffic_convection")
     in3 = keras.Input(shape=rnn_state_shape, name="rnn_state")
-    out0, out1, out2, out3, out4, out5, out6, out7, out8, out9, out10, out11, out12 = UNet(x0, in1, in2, in3, num_classes)
+    out0_out11, out12 = UNet(x0, in1, in2, in3, num_classes)
+    #out0, out1, out2, out3, out4, out5, out6, out7, out8, out9, out10, out11, out12 = UNet(x0, in1, in2, in3, num_classes)
 
       # Define the model
-    model = keras.Model(inputs=[imgs, in1, in2, in3], outputs=[out0, out1, out2, out3, out4, out5, out6, out7, out8, out9, out10, out11, out12], name='modelAB')
+    model = keras.Model(inputs=[imgs, in1, in2, in3], outputs=[out0_out11, out12], name='modelAB')
+    #model = keras.Model(inputs=[imgs, in1, in2, in3], outputs=[out0, out1, out2, out3, out4, out5, out6, out7, out8, out9, out10, out11, out12], name='modelAB')
       #print('#--- imgs.shape =', imgs.shape)
       #--- imgs.shape = (None, 12, 128, 256)
       #--- in1.shape = (None, 8)
@@ -265,4 +272,4 @@ if __name__=="__main__":
     model.summary()
 
     #tf.keras.utils.plot_model(model, to_file='./saved_model/modelAB.png')
-    #model.save('./saved_model/modelAB.h5')
+    model.save('./saved_model/modelAB.h5')

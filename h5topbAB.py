@@ -1,7 +1,25 @@
 '''
-YPL & JLL, 2021.9.17, 10.12, 12.8
+YPL, JLL, YJW, 2021.9.17, 10.12, 12.14
 
 (YPN) jinn@Liu:~/YPN/ABNet$ python h5topbAB.py modelAB.pb
+
+----- Frozen pb model inputs needed for converting pb to dlc:
+[<tf.Tensor 'Input:0' shape=(None, 12, 128, 256) dtype=float32>, <tf.Tensor 'Input_1:0' shape=(None, 8) dtype=float32>, <tf.Tensor 'Input_2:0' shape=(None, 2) dtype=float32>, <tf.Tensor 'Input_3:0' shape=(None, 512) dtype=float32>]
+----- Frozen pb model outputs needed for converting pb to dlc: 
+[<tf.Tensor 'Identity:0' shape=(None, 2383) dtype=float32>, <tf.Tensor 'Identity_1:0' shape=(None, 256, 512, 12) dtype=float32>]
+----- OK: pb is saved in ./saved_model
+
+--- from pb to dlc
+(snpe) jinn@Liu:~/snpe$ export ANDROID_NDK_ROOT=android-ndk-r22b
+(snpe) jinn@Liu:~/snpe$ source snpe-1.48.0.2554/bin/envsetup.sh -t snpe-1.48.0.2554
+(snpe) jinn@Liu:~/snpe$ snpe-tensorflow-to-dlc --input_network ./dlc/modelAB.pb \
+--input_dim Input "1,12,128,256" --input_dim Input_1 "1,8" --input_dim Input_2 "1,2" --input_dim Input_3 "1,512" \
+--out_node "Identity" --out_node "Identity_1" \
+--output_path ./dlc/modelAB.dlc
+OK
+
+(snpe) jinn@Liu:~/snpe/dlc$ snpe-dlc-viewer -i modelAB.dlc
+OK
 '''
 import os
 import argparse
