@@ -1,5 +1,6 @@
 """   JLL, SLT, 2021.12.16
 rename AB2B to AB and then run Project B
+run train_modelAB2A.py first and then train_modelAB2B.py
 from /home/jinn/YPN/OPNet/train_modelA4.py, train_modelB3.py
 train modelAB = UNet + RNN + PoseNet
 combine Projects A and B
