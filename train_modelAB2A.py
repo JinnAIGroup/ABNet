@@ -1,12 +1,9 @@
-"""   JLL, SLT, 2021.12.16
-rename AB2A to AB and then run Project A
-run train_modelAB2A.py first and then train_modelAB2B.py
+"""   JLL, SLT, 2021.12.20
+AB2A: modelAB = UNet + RNN + PoseNet combines models A and B but runs only model A data
 from /home/jinn/YPN/OPNet/train_modelA4.py, train_modelB3.py
-train modelAB = UNet + RNN + PoseNet
-combine Projects A and B
 
 1. Same as supercombo I/O
-2. Task: Multiclass semantic segmentation (num_classes = 6)
+2. A Task: Multiclass semantic segmentation (num_classes = 6)
 3. Loss: tf.keras.losses.CategoricalCrossentropy
 4. Ground Truth:
    /home/jinn/dataAll/comma10k/Xmasks/*.png
@@ -20,16 +17,18 @@ combine Projects A and B
    outs[ 12 ].shape = (1, 512) = Ymasks
 
 Run: on 3 terminals
-   (YPN) jinn@Liu:~/YPN/OPNet$ python serverAB.py --port 5557
-   (YPN) jinn@Liu:~/YPN/OPNet$ python serverAB.py --port 5558 --validation
-   (YPN) jinn@Liu:~/YPN/OPNet$ python train_modelAB.py --port 5557 --port_val 5558
+   (YPN) jinn@Liu:~/YPN/OPNet$ python serverAB2A.py --port 5557
+   (YPN) jinn@Liu:~/YPN/OPNet$ python serverAB2A.py --port 5558 --validation
+   (YPN) jinn@Liu:~/YPN/OPNet$ python train_modelAB2A.py --port 5557 --port_val 5558
 Input:
    X_img:   /home/jinn/dataAll/comma10k/Ximgs_yuv/*.h5  (X for debugging with 10 imgs)
    Y_GTmsk: /home/jinn/dataAll/comma10k/Xmasks/*.png
    X_batch.shape = (none, 2x6, 128, 256) (num_channels = 6, 2 yuv images)
    Y_batch.shape = (none, 256, 512, 2x6) (num_classes  = 6)
 Output:
-  /OPNet/saved_model/modelAB_loss.npy
+  /YPN/ABNet/saved_model/modelAB_lossA.npy
+  /YPN/ABNet/saved_model/modelAB_trainedA.h5
+
 
 Training History:
   BATCH_SIZE = 16  EPOCHS = 2
@@ -45,8 +44,8 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
-from modelAB import get_model
-from serverAB import client_generator, BATCH_SIZE
+from modelAB2A import get_model
+from serverAB2A import client_generator, BATCH_SIZE
 
 EPOCHS = 2
 
@@ -119,8 +118,8 @@ if __name__=="__main__":
     minutes, seconds = divmod(rem, 60)
     print("Training Time: {:0>2}:{:0>2}:{:05.2f}".format(int(hours),int(minutes),seconds))
 
-    np.save('./saved_model/modelAB_loss', np.array(history.history['loss']))
-    lossnpy = np.load('./saved_model/modelAB_loss.npy')
+    np.save('./saved_model/modelAB_lossA', np.array(history.history['loss']))
+    lossnpy = np.load('./saved_model/modelAB_lossA.npy')
     plt.plot(lossnpy)  #--- lossnpy.shape = (10,)
     plt.draw() #plt.show()
     plt.pause(0.5)

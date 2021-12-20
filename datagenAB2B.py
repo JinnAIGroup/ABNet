@@ -1,5 +1,5 @@
-"""   JLL, SLT, 2021.12.9, 12.16
-rename AB2B to AB and then run Project B
+"""   JLL, SLT, 2021.12.9, 12.20
+AB2B: modelAB = UNet + RNN + PoseNet combines models A and B but runs only model B data
 from /home/jinn/YPN/OPNet/datagenA4.py, datagenB3.py
 
 Input:
@@ -74,11 +74,11 @@ def datagen(batch_size, camera_files, images, masks, image_H, image_W, mask_H, m
 
     Xin2[:, 0] = 1.0   # traffic convection = left hand drive like in Taiwan
 
-      #----- Project A Part
+      #----- Project A
     imgsN = len(images)
     print('#---datagenAB  imgsN =', imgsN)
 
-      #----- Project B Part
+      #----- Project B
     path_files  = [f.replace('yuv', 'pathdata') for f in camera_files]
     radar_files = [f.replace('yuv', 'radardata') for f in camera_files]
     for cfile, pfile, rfile in zip(camera_files, path_files, radar_files):
@@ -90,11 +90,11 @@ def datagen(batch_size, camera_files, images, masks, image_H, image_W, mask_H, m
 
     batchIndx = 0
     while True:
-          #-----Begin Project A Part
+          #-----Begin Project A
         '''
         count = 0
         while count < batch_size:
-            print('#---  Project A Part  count =', count)
+            print('#---  Project A  count =', count)
             ri = np.random.randint(0, imgsN-1, 1)[-1]   # ri cannot be the last img imgsN-1
             for i in range(imgsN-1):
                 if ri < imgsN-1:   # the last imge is used only once
@@ -107,9 +107,9 @@ def datagen(batch_size, camera_files, images, masks, image_H, image_W, mask_H, m
                 break
             count += 1
         yield Ximgs, Xin1, Xin2, Xin3, Ytrue0, Ytrue1, Ytrue2, Ytrue3, Ytrue4, Ytrue5, Ytrue6, Ytrue7, Ytrue8, Ytrue9, Ytrue10, Ytrue11, Ymasks
-          #-----End Project A Part
+          #-----End Project A
         '''
-          #-----Begin Project B Part
+          #-----Begin Project B
         for cfile, pfile, rfile in zip(camera_files, path_files, radar_files):
             with h5py.File(cfile, "r") as cf5:
                 pf5 = h5py.File(pfile, 'r')
@@ -138,7 +138,7 @@ def datagen(batch_size, camera_files, images, masks, image_H, image_W, mask_H, m
 
                 count = 0
                 while count < batch_size:
-                    print('#---  Project B Part  count =', count)
+                    print('#---  Project B  count =', count)
                     ri = np.random.randint(0, dataN-2, 1)[-1]   # ri cannot be the last dataN-1
                     print("#---  count, dataN, ri =", count, dataN, ri)
                     for i in range(dataN-1):
@@ -226,4 +226,4 @@ def datagen(batch_size, camera_files, images, masks, image_H, image_W, mask_H, m
                     plt.show()
                     Nplot += 1
                 yield Ximgs, Xin1, Xin2, Xin3, Ytrue0, Ytrue1, Ytrue2, Ytrue3, Ytrue4, Ytrue5, Ytrue6, Ytrue7, Ytrue8, Ytrue9, Ytrue10, Ytrue11, Ymasks
-          #-----End Project B Part
+          #-----End Project B

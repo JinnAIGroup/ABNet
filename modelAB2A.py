@@ -1,13 +1,11 @@
-'''   JLL, SLT, YJW, 2021.9.9, 11.4, 12.16
-rename AB2A to AB and then run Project A
+'''   JLL, SLT, YJW, 2021.9.9, 11.4, 12.20
+AB2A: modelAB = UNet + RNN + PoseNet combines models A and B but runs only model A data
 from /home/jinn/YPN/OPNet/train_modelA4.py, train_modelB3.py
-modelAB = UNet + RNN + PoseNet
-combine modelA4 and modelB3
 supercombo: https://drive.google.com/file/d/1L8sWgYKtH77K6Kr3FQMETtAWeQNyyb8R/view
 output.txt: https://github.com/JinnAIGroup/OPNet/blob/main/output.txt
 
 1. Same as supercombo I/O
-2. Tasks: multiclass semantic segmentation + temporal state (features) + path planning (PP)
+2. AB Tasks: multiclass semantic segmentation + temporal state (features) + path planning (PP)
    The temporal state (a 512 array) represents (are features of) all path planning details:
    path prediction, lane detection, lead car xyva, desire etc., i.e., outs[0]...[10] in output.txt.
 3. Input:
@@ -41,7 +39,7 @@ Goal: modelAB successfully drives my car like supercombo does
 6. How to use modelAB to do lateral and longitudinal controls?
 
 Run:
-   (YPN) jinn@Liu:~/YPN/ABNet$ python modelAB.py
+   (YPN) jinn@Liu:~/YPN/ABNet$ python modelAB2A.py
 '''
 import tensorflow as tf
 from tensorflow import keras
