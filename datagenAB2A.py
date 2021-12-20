@@ -1,5 +1,5 @@
 """   JLL, SLT, 2021.12.9, 12.20
-AB2A: modelAB = UNet + RNN + PoseNet combines models A and B but runs only model A data
+AB2A: modelAB = UNet + RNN + PoseNet combines models A and B but runs only A data
 from /home/jinn/YPN/OPNet/datagenA4.py, datagenB3.py
 
 Input:

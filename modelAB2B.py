@@ -1,5 +1,5 @@
 '''   JLL, SLT, YJW, 2021.9.9, 11.4, 12.19
-AB2B: modelAB = UNet + RNN + PoseNet combines models A and B but runs only model B data
+AB2B: modelAB = UNet + RNN + PoseNet combines models A and B but runs only B data
 from /home/jinn/YPN/OPNet/train_modelA4.py, train_modelB3.py
 supercombo: https://drive.google.com/file/d/1L8sWgYKtH77K6Kr3FQMETtAWeQNyyb8R/view
 output.txt: https://github.com/JinnAIGroup/OPNet/blob/main/output.txt

@@ -1,5 +1,5 @@
 """   JLL, SLT, 2021.12.20
-AB2B: modelAB = UNet + RNN + PoseNet combines models A and B but runs only model B data
+AB2B: modelAB = UNet + RNN + PoseNet combines models A and B but runs only B data
 from /home/jinn/YPN/OPNet/train_modelA4.py, train_modelB3.py
 
 1. Same as supercombo I/O
