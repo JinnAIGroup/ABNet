@@ -41,9 +41,9 @@ Output:
 
 Training History:
   BATCH_SIZE = 16  EPOCHS = 2
-  71/71 [==============================] - 475s 7s/step -
-  loss: 1.7758 - val_loss: 0.2739 - val_concatenate_3_loss: 0.2651 - val_conv2d_transpose_12_loss: 0.0088 - val_concatenate_3_custom_loss: 0.2651 - val_conv2d_transpose_12_custom_loss: 0.0088
-  Training Time: 00:16:03.38
+  71/71 [==============================] - 150s 2s/step -
+  loss: 3.2881 - custom_loss: 3.2881 - val_loss: 2.4091 - val_custom_loss: 2.4091
+  Training Time: 00:04:51.71
 """
 import os
 import h5py
