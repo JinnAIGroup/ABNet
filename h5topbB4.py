@@ -1,19 +1,29 @@
 '''
-YPL, JLL, YJW, 2021.9.17, 10.12, 12.20
+YPL, JLL, YJW, 2021.9.17, 10.12, 12.24
+  #model.load_weights('./saved_model/supercombo079.keras')
+  #----- Error: You use 'json mode' to covert this model
 
 (YPN) jinn@Liu:~/YPN/ABNet$ python h5topbB4.py modelB4.pb
 ----- Frozen pb model inputs needed for converting pb to dlc:
 [<tf.Tensor 'Input:0' shape=(None, 12, 128, 256) dtype=float32>, <tf.Tensor 'Input_1:0' shape=(None, 8) dtype=float32>, <tf.Tensor 'Input_2:0' shape=(None, 2) dtype=float32>, <tf.Tensor 'Input_3:0' shape=(None, 512) dtype=float32>]
 ----- Frozen pb model outputs needed for converting pb to dlc:
-[<tf.Tensor 'Identity:0' shape=(None, 2383) dtype=float32>]
+[<tf.Tensor 'Identity:0' shape=(None, 385) dtype=float32>, <tf.Tensor 'Identity_1:0' shape=(None, 386) dtype=float32>, <tf.Tensor 'Identity_2:0' shape=(None, 386) dtype=float32>, <tf.Tensor 'Identity_3:0' shape=(None, 58) dtype=float32>, <tf.Tensor 'Identity_4:0' shape=(None, 200) dtype=float32>, <tf.Tensor 'Identity_5:0' shape=(None, 200) dtype=float32>, <tf.Tensor 'Identity_6:0' shape=(None, 200) dtype=float32>, <tf.Tensor 'Identity_7:0' shape=(None, 8) dtype=float32>, <tf.Tensor 'Identity_8:0' shape=(None, 4) dtype=float32>, <tf.Tensor 'Identity_9:0' shape=(None, 32) dtype=float32>, <tf.Tensor 'Identity_10:0' shape=(None, 12) dtype=float32>, <tf.Tensor 'Identity_11:0' shape=(None, 512) dtype=float32>]
 ----- OK: pb is saved in ./saved_model
 
 --- from pb to dlc
-(snpe) jinn@Liu:~/snpe$ export ANDROID_NDK_ROOT=android-ndk-r22b
-(snpe) jinn@Liu:~/snpe$ source snpe-1.48.0.2554/bin/envsetup.sh -t snpe-1.48.0.2554
-(snpe) jinn@Liu:~/snpe$ snpe-tensorflow-to-dlc --input_network ./dlc/modelB4.pb \
+(snpe) jinn@Liu:~/snpe/dlc$ export ANDROID_NDK_ROOT=android-ndk-r22b
+(snpe) jinn@Liu:~/snpe/dlc$ source snpe-1.48.0.2554/bin/envsetup.sh -t snpe-1.48.0.2554
+(snpe) jinn@Liu:~/snpe/dlc$ snpe-tensorflow-to-dlc --input_network modelB4.pb \
 --input_dim Input "1,12,128,256" --input_dim Input_1 "1,8" --input_dim Input_2 "1,2" --input_dim Input_3 "1,512" \
---out_node "Identity" --output_path ./dlc/modelB4.dlc
+--out_node "Identity" --out_node "Identity_1" --out_node "Identity_2" --out_node "Identity_3" --out_node "Identity_4" \
+--out_node "Identity_5" --out_node "Identity_6" --out_node "Identity_7" --out_node "Identity_8" --out_node "Identity_9" \
+--out_node "Identity_10" --out_node "Identity_11" --output_path modelB4.dlc
+
+ConverterError: ERROR_TF_LAYER_NO_INPUT_FOUND: FullyConnected layer modelB4/1_left_lane/MatMul requires at least one input layer
+
+(snpe) jinn@Liu:~/snpe/dlc$ snpe-tensorflow-to-dlc --input_network modelB4.pb \
+--input_dim Input "1,12,128,256" --input_dim Input_1 "1,8" --input_dim Input_2 "1,2" --input_dim Input_3 "1,512" \
+--out_node "Identity" --output_path modelB4.dlc
 
 (snpe) jinn@Liu:~/snpe/dlc$ snpe-dlc-viewer -i modelB4.dlc
 '''
