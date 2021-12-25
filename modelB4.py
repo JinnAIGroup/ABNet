@@ -1,4 +1,4 @@
-'''   JLL, SLT, YJW, 2021.12.20
+'''   JLL, SLT, YJW, 2021.12.24
 modelB4 = EfficientNet + RNN + PoseNet => modelB4.dlc = supercombo079.dlc (no Project A)
 from /home/jinn/YPN/ABNet/superB4.py
 supercombo: https://drive.google.com/file/d/1L8sWgYKtH77K6Kr3FQMETtAWeQNyyb8R/view
@@ -29,23 +29,22 @@ output.txt: https://github.com/JinnAIGroup/OPNet/blob/main/output.txt
    outs[ 9 ].shape = (1, 32)
    outs[ 10 ].shape = (1, 12)
    outs[ 11 ].shape = (1, 512)
-   outs[0-11].shape = (1, 2383)
 
 Run:
   (YPN) jinn@Liu:~/YPN/ABNet$ python modelB4.py
+
+modelB4a.py (UNet, untrained, 1  out):  py => h5 => pb => main (NG) => dlc
+modelB4b.py (EffNet, trained, 1  out):  py => h5 => pb => main (NG) => dlc
+modelB4c.py (EffNet,    both, 12 outs): py => h5 => pb => main      => dlc (OK)
+
+Road Test:
+211225 modelB4b1.dlc:
+  1. WARNING: This branch is not tested   
+  2. openpilot Unavailable  No Close Lead Car
 '''
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-
-def EffNet(x0):
-    x = stem(x0)
-    x = block(x)
-    x = top(x)
-    x = layers.Conv2D(32, 1, padding="same")(x)
-    x = layers.Activation("elu")(x)
-    x_to_RNNfk2fk3 = layers.Flatten()(x)
-    return x_to_RNNfk2fk3
 
 def stem(x0):
     x = layers.Conv2D(32, 3, strides=2, padding="same", name="stem_conv")(x0)
@@ -246,8 +245,8 @@ def RNN(x, desire, traffic_convection, rnn_state):
     one_minus = layers.Dense(use_bias=False, units=512)(activation_1)
     multiply_2 = one_minus*activation_2
     multiply_1 = snpe_pleaser*activation_1
-    out8 = layers.add([multiply_1 , multiply_2])
-    return out8
+    out11 = layers.add([multiply_1 , multiply_2])
+    return out11
 
 def fork1(x):
     xp = layers.Dense(256, activation='relu', name="1_path")(x)
@@ -296,24 +295,31 @@ def fork1(x):
     out5 = layers.Dense(200, name="long_a")(x5)
     out6 = layers.Dense(200, name="long_v")(x6)
     out7 = layers.Softmax(axis=-1, name="desire_state")(x7)
-    out0_out7 = layers.Concatenate(axis=-1)([out0, out1, out2, out3, out4, out5, out6, out7])
-    return out0_out7
+    return out0, out1, out2, out3, out4, out5, out6, out7
 
 def fork2(x):
     x1 = layers.Dense(256, activation='relu', name="meta0")(x)
-    out9 = layers.Dense(4, activation='sigmoid', name="meta")(x1)
+    out8 = layers.Dense(4, activation='sigmoid', name="meta")(x1)
     dp1 = layers.Dense(32, name="desire_final_dense")(x1)
     dp2 = layers.Reshape((4, 8), name="desire_reshape")(dp1)
     dp3 = layers.Softmax(axis=-1, name="desire_pred0")(dp2)
-    out10 = layers.Flatten(name="desire_pred")(dp3)
-    out9_out10 = layers.Concatenate(axis=-1)([out9, out10])
-    return out9_out10
+    out9 = layers.Flatten(name="desire_pred")(dp3)
+    return out8, out9
 
 def fork3(x):
     x = layers.Dense(64, activation='relu')(x)
     x = layers.Dense(32, activation='relu')(x)
-    out11 = layers.Dense(12, name="pose")(x)
-    return out11
+    out10 = layers.Dense(12, name="pose")(x)
+    return out10
+
+def EffNet(x0):
+    x = stem(x0)
+    x = block(x)
+    x = top(x)
+    x = layers.Conv2D(32, 1, padding="same")(x)
+    x = layers.Activation("elu")(x)
+    x_to_RNNfk2fk3 = layers.Flatten()(x)
+    return x_to_RNNfk2fk3
 
 def get_model(img_shape, desire_shape, traffic_convection_shape, rnn_state_shape, num_classes):
     imgs = keras.Input(shape=img_shape, name="pic")
@@ -323,16 +329,19 @@ def get_model(img_shape, desire_shape, traffic_convection_shape, rnn_state_shape
     in1 = keras.Input(shape=desire_shape, name="desire")
     in2 = keras.Input(shape=traffic_convection_shape, name="traffic_convection")
     in3 = keras.Input(shape=rnn_state_shape, name="rnn_state")
+    in0_in3 = [imgs, in1, in2, in3]
 
     x_to_RNNfk2fk3 = EffNet(in0)
-    out8       = RNN(x_to_RNNfk2fk3, in1, in2, in3)
-    out0_out7  = fork1(out8)
-    out9_out10 = fork2(x_to_RNNfk2fk3)
-    out11      = fork3(x_to_RNNfk2fk3)
-    out0_out11 = layers.Concatenate(axis=-1)([out0_out7, out8, out9_out10, out11])
+    out11 = RNN(x_to_RNNfk2fk3, in1, in2, in3)
+    out0, out1, out2, out3, out4, out5, out6, out7 = fork1(out11)
+    out8, out9 = fork2(x_to_RNNfk2fk3)
+    out10      = fork3(x_to_RNNfk2fk3)
+    outs = layers.Concatenate(axis=-1)([out0, out1, out2, out3, out4, out5, out6, out7, out11, out8, out9, out10])
+    # [out0, ..., out7, out11***, out8, out9, out10]
+    #out0_out11 = [out0, out1, out2, out3, out4, out5, out6, out7, out11, out8, out9, out10]
 
       # Define the model
-    model = keras.Model(inputs=[imgs, in1, in2, in3], outputs=out0_out11, name='modelB4')
+    model = keras.Model(inputs=in0_in3, outputs=outs, name='modelB4')
     return model
 
 if __name__=="__main__":

@@ -1,6 +1,7 @@
-"""   JLL, SLT, 2021.12.21
+"""   JLL, SLT, 2021.12.24
 modelB4.dlc = supercombo079.dlc (no Project A) runs on B data
-from /home/jinn/YPN/ABNet/train_modelAB2B.py
+from /home/jinn/YPN/OPNet/JL11_train_model.py
+     /home/jinn/YPN/ABNet/train_modelAB2B.py
 
 1. B Tasks: temporal state (features) + path planning (PP)
    The temporal state (a 512 array) represents (are features of) all path planning details:
@@ -23,11 +24,10 @@ from /home/jinn/YPN/ABNet/train_modelAB2B.py
    outs[ 5 ].shape = (1, 200)
    outs[ 6 ].shape = (1, 200)
    outs[ 7 ].shape = (1, 8)
-   outs[ 8 ].shape = (1, 4)
-   outs[ 9 ].shape = (1, 32)
-   outs[ 10 ].shape = (1, 12)
-   outs[ 11 ].shape = (1, 512)
-   outs[0-11].shape = (1, 2383)
+   outs[ 8 ].shape = (1, 512)
+   outs[ 9 ].shape = (1, 4)
+   outs[ 10 ].shape = (1, 32)
+   outs[ 11 ].shape = (1, 12)
 
 Run: on 3 terminals
    (YPN) jinn@Liu:~/YPN/ABNet$ python serverAB2B.py --port 5557
@@ -41,9 +41,10 @@ Output:
 
 Training History:
   BATCH_SIZE = 16  EPOCHS = 2
-  71/71 [==============================] - 150s 2s/step -
-  loss: 3.2881 - custom_loss: 3.2881 - val_loss: 2.4091 - val_custom_loss: 2.4091
-  Training Time: 00:04:51.71
+  modelB4b1
+  71/71 [==============================] - 135s 2s/step -
+  loss: 0.0173 - custom_loss: 0.0173 - val_loss: 0.0074 - val_custom_loss: 0.0074
+  Training Time: 00:04:37.11
 """
 import os
 import h5py
@@ -65,15 +66,27 @@ def gen(hwm, host, port, model):
         Ximgs, Xin1, Xin2, Xin3, Ytrue0, Ytrue1, Ytrue2, Ytrue3, Ytrue4, Ytrue5, Ytrue6, Ytrue7, Ytrue8, Ytrue9, Ytrue10, Ytrue11, Ymasks = tup
 
         Xins  = [Ximgs, Xin1, Xin2, Xin3]   #  (imgs, traffic_convection, desire, rnn_state)
-        Ytrue0_11 = np.hstack((Ytrue0, Ytrue1, Ytrue2, Ytrue3, Ytrue4, Ytrue5, Ytrue6, Ytrue7, Ytrue8, Ytrue9, Ytrue10, Ytrue11))
-        Ytrue = [Ytrue0_11, Ymasks]
-          #---  Ytrue[0].shape = (16, 2383)
-          #---  Ytrue[1].shape = (16, 256, 512, 12)
+        Ytrue = [Ytrue0, Ytrue1, Ytrue2, Ytrue3, Ytrue4, Ytrue5, Ytrue6, Ytrue7, Ytrue11, Ytrue8, Ytrue9, Ytrue10]   # modelB4b12
+        #Ytrue = np.hstack((Ytrue0, Ytrue1, Ytrue2, Ytrue3, Ytrue4, Ytrue5, Ytrue6, Ytrue7, Ytrue11, Ytrue8, Ytrue9, Ytrue10))   # modelB4b1
 
         yield Xins, Ytrue
 
 def custom_loss(y_true, y_pred):
-    loss = tf.keras.losses.mse(y_true[0], y_pred[0])
+    loss0 = tf.keras.losses.mse(y_true[0], y_pred[0])   # modelB4b12
+    loss1 = tf.keras.losses.mse(y_true[1], y_pred[1])
+    loss2 = tf.keras.losses.mse(y_true[2], y_pred[2])
+    loss3 = tf.keras.losses.mse(y_true[3], y_pred[3])
+    loss4 = tf.keras.losses.mse(y_true[4], y_pred[4])
+    loss5 = tf.keras.losses.mse(y_true[5], y_pred[5])
+    loss6 = tf.keras.losses.mse(y_true[6], y_pred[6])
+    loss7 = tf.keras.losses.mse(y_true[7], y_pred[7])
+    loss8 = tf.keras.losses.mse(y_true[8], y_pred[8])
+    loss9 = tf.keras.losses.mse(y_true[9], y_pred[9])
+    loss10 = tf.keras.losses.mse(y_true[10], y_pred[10])
+    loss = 0.5*loss0 + 0.5*loss3
+    '''
+    loss = tf.keras.losses.mse(y_true, y_pred)   # modelB4b1
+    '''
 
     return loss
 
@@ -111,7 +124,7 @@ if __name__=="__main__":
         validation_steps=1150//BATCH_SIZE, verbose=1, callbacks=callbacks_list)
           # steps_per_epoch = total images//BATCH_SIZE
 
-    model.save('./saved_model/modelB4_trained.h5')
+    model.save('./saved_model/modelB4.h5')
 
     end = time.time()
     hours, rem = divmod(end-start, 3600)

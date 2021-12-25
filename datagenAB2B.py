@@ -1,4 +1,4 @@
-"""   JLL, SLT, 2021.12.9, 12.20
+"""   JLL, SLT, 2021.12.9, 12.24
 AB2B: modelAB = UNet + RNN + PoseNet combines models A and B but runs only B data
 from /home/jinn/YPN/OPNet/datagenA4.py, datagenB3.py
 
@@ -74,10 +74,6 @@ def datagen(batch_size, camera_files, images, masks, image_H, image_W, mask_H, m
 
     Xin2[:, 0] = 1.0   # traffic convection = left hand drive like in Taiwan
 
-      #----- Project A
-    imgsN = len(images)
-    print('#---datagenAB  imgsN =', imgsN)
-
       #----- Project B
     path_files  = [f.replace('yuv', 'pathdata') for f in camera_files]
     radar_files = [f.replace('yuv', 'radardata') for f in camera_files]
@@ -90,25 +86,6 @@ def datagen(batch_size, camera_files, images, masks, image_H, image_W, mask_H, m
 
     batchIndx = 0
     while True:
-          #-----Begin Project A
-        '''
-        count = 0
-        while count < batch_size:
-            print('#---  Project A  count =', count)
-            ri = np.random.randint(0, imgsN-1, 1)[-1]   # ri cannot be the last img imgsN-1
-            for i in range(imgsN-1):
-                if ri < imgsN-1:   # the last imge is used only once
-                    vsX1, vsY1 = concatenate(images[ri], masks[ri], mask_H, mask_W, class_values)
-                      #---  vsX1.shape, vsY1.shape = (6, 128, 256) (256, 512, 6)
-                    vsX2, vsY2 = concatenate(images[ri+1], masks[ri+1], mask_H, mask_W, class_values)
-
-                    Ximgs[count] = np.vstack((vsX1, vsX2))
-                    Ymasks[count] = np.concatenate((vsY1, vsY2), axis=-1)
-                break
-            count += 1
-        yield Ximgs, Xin1, Xin2, Xin3, Ytrue0, Ytrue1, Ytrue2, Ytrue3, Ytrue4, Ytrue5, Ytrue6, Ytrue7, Ytrue8, Ytrue9, Ytrue10, Ytrue11, Ymasks
-          #-----End Project A
-        '''
           #-----Begin Project B
         for cfile, pfile, rfile in zip(camera_files, path_files, radar_files):
             with h5py.File(cfile, "r") as cf5:
@@ -203,25 +180,25 @@ def datagen(batch_size, camera_files, images, masks, image_H, image_W, mask_H, m
 
                 if Nplot == 0:
                     Yb = Ytrue0[0][:]
-                    print('#---datagenAB  Ytrue0[0][50:51] =', Ytrue0[0][50:51])   # valid_len
+                    print('#---datagenAB  Ytrue0[0][50:51]   =', Ytrue0[0][50:51])   # valid_len
                     print('#---datagenAB  Ytrue0[0][242:243] =', Ytrue0[0][242:243])   # valid_len, 242 = 50+192
-                    print('#---datagenAB  Ytrue1[0][50:51] =', Ytrue1[0][0:1])   # lcar's d
-                    print('#---datagenAB  Ytrue1[0][242:243] =', Ytrue1[0][29:30])   # lcar's d, 414 = 385+29
+                    print('#---datagenAB  Ytrue3[0][0:1]     =', Ytrue3[0][0:1])   # lcar's d
+                    print('#---datagenAB  Ytrue3[0][29:30]   =', Ytrue3[0][29:30])   # lcar's d, 414 = 385+29
                     plt.plot(Yb)
                     plt.show()
                     Nplot += 1
 
                 Ytrue0[:, 50:51]/=100   # normalize valid_len
                 Ytrue0[:, 242:243]/=100
-                Ytrue1[:, 0:1]/=100   # normalize lcar's d
-                Ytrue1[:, 29:30]/=100
+                Ytrue3[:, 0:1]/=100   # normalize lcar's d
+                Ytrue3[:, 29:30]/=100
 
                 if Nplot == 1:
                     Yb = Ytrue0[0][:]
-                    print('#---datagenAB  Ytrue0[0][50:51] =', Ytrue0[0][50:51])   # valid_len
+                    print('#---datagenAB  Ytrue0[0][50:51]   =', Ytrue0[0][50:51])   # valid_len
                     print('#---datagenAB  Ytrue0[0][242:243] =', Ytrue0[0][242:243])   # valid_len, 242 = 50+192
-                    print('#---datagenAB  Ytrue1[0][50:51] =', Ytrue1[0][0:1])   # lcar's d
-                    print('#---datagenAB  Ytrue1[0][242:243] =', Ytrue1[0][29:30])   # lcar's d, 414 = 385+29
+                    print('#---datagenAB  Ytrue3[0][0:1]     =', Ytrue3[0][0:1])   # lcar's d
+                    print('#---datagenAB  Ytrue3[0][29:30]   =', Ytrue3[0][29:30])   # lcar's d, 414 = 385+29
                     plt.plot(Yb)
                     plt.show()
                     Nplot += 1

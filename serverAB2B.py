@@ -3,8 +3,8 @@ AB2B: modelAB = UNet + RNN + PoseNet combines models A and B but runs only B dat
 from /home/jinn/YPN/OPNet/serverA4.py, serverB3.py
 
 Run: on 2 terminals
-  (YPN) jinn@Liu:~/YPN/OPNet$ python serverAB2B.py --port 5557
-  (YPN) jinn@Liu:~/YPN/OPNet$ python serverAB2B.py --port 5558 --validation
+  (YPN) jinn@Liu:~/YPN/ABNet$ python serverAB2B.py --port 5557
+  (YPN) jinn@Liu:~/YPN/ABNet$ python serverAB2B.py --port 5558 --validation
 Input:
   bRGB (874, 1164, 3) = (H, W, C) <=> bYUV (1311, 1164) <=>  CbYUV (6, 291,  582) = (C, H, W) [key: 1311 =  874x3/2]
   sRGB (256,  512, 3) = (H, W, C) <=> sYUV  (384,  512) <=>  CsYUV (6, 128,  256) = (C, H, W) [key:  384 =  256x3/2]
